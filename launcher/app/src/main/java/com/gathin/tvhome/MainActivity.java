@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
     private SpotifySessions spotify;
     private MediaController music;
     private FrameLayout root, homeContent;
-    private boolean arrivalPending, arrivalRowsReady, arrivalWallpaperReady;
+    private boolean arrivalPending, arrivalRowsReady, arrivalWallpaperReady, arrivalTimedOut;
     private final Runnable arrivalFallback = () -> finishHomeArrival(true);
     private ImageView wallpaper, wallpaperNext, musicArt, backdrop;
     private View dockSurface;
@@ -271,7 +271,7 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume(); active = true; art.resume();
-        arrivalPending = true; arrivalRowsReady = false; arrivalWallpaperReady = false;
+        arrivalPending = true; arrivalRowsReady = false; arrivalWallpaperReady = false; arrivalTimedOut = false;
         homeContent.animate().cancel(); homeContent.setAlpha(0f);
         scrollTarget = 0; scroll.scrollTo(0, 0);
         main.removeCallbacks(arrivalFallback); main.postDelayed(arrivalFallback, 400);
@@ -293,6 +293,7 @@ public class MainActivity extends Activity {
     @Override protected void onPause() {
         arrivalPending = false; main.removeCallbacks(arrivalFallback);
         homeContent.animate().cancel(); homeContent.setAlpha(1f);
+        wallpaper.animate().cancel(); wallpaper.setAlpha(.9f);
         active = false; main.removeCallbacks(musicTick); main.removeCallbacks(refreshPrograms);
         weatherGeneration++; refreshGeneration++; main.removeCallbacks(refreshWeather);
         art.pause(); wallpaperKey = "";
@@ -317,12 +318,22 @@ public class MainActivity extends Activity {
         apps.clear(); appsDiscoveredAt = 0;
     }
 
+    @Override public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) finishHomeArrival(false);
+    }
+
     private void finishHomeArrival(boolean fallback) {
-        if (!active || closed || !arrivalPending || (!fallback && (!arrivalRowsReady || !arrivalWallpaperReady))) return;
+        if (fallback) arrivalTimedOut = true;
+        // Resume/layout can happen behind the outgoing app. Do not spend the fade there.
+        if (!active || closed || !arrivalPending || !hasWindowFocus()
+                || (!arrivalTimedOut && (!arrivalRowsReady || !arrivalWallpaperReady))) return;
         arrivalPending = false; main.removeCallbacks(arrivalFallback);
         // The layout callback has already restored focus before this frame is drawn.
-        homeContent.animate().alpha(1f).setDuration(motion(200))
-                .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+        homeContent.animate().alpha(1f).setDuration(motion(500))
+                .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator()).start();
+        wallpaper.animate().alpha(.9f).setDuration(motion(500))
+                .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator()).start();
     }
 
     private void releaseImages(View view) {
@@ -636,7 +647,7 @@ public class MainActivity extends Activity {
         if (!Arrays.asList("misty", "aurora", "moon_lake", "dunes", "dusk_peaks", "golden_coast", "clouds", "custom").contains(key)) key = "misty";
         if ("custom".equals(key)) key = prefs.getString("wallpaper_uri", "");
         int dim = 10;
-        wallpaper.setAlpha(1f - Math.max(0, Math.min(80, dim)) / 100f);
+        wallpaper.setAlpha(arrivalPending ? .45f : 1f - Math.max(0, Math.min(80, dim)) / 100f);
         if (key.equals(wallpaperKey)) { arrivalWallpaperReady = wallpaperBitmap != null; finishHomeArrival(false); return; }
         wallpaperKey = key;
         String location = key.startsWith("content:") ? key : "asset:wallpapers/" + key + ".jpg";
@@ -645,8 +656,12 @@ public class MainActivity extends Activity {
             if (!active || closed || !requested.equals(wallpaperKey)) return;
             float opacity = 1f - 10 / 100f;
             wallpaper.animate().cancel(); wallpaperNext.animate().cancel();
-            if (wallpaperBitmap == null) wallpaper.setImageBitmap(bitmap);
-            else {
+            if (wallpaperBitmap == null || arrivalPending) {
+                wallpaper.setImageBitmap(bitmap);
+                wallpaperNext.setAlpha(0f); wallpaperNext.setImageDrawable(null);
+                // A slow image may arrive after the readiness fallback began the entrance.
+                if (!arrivalPending) wallpaper.animate().alpha(opacity).setDuration(motion(250)).start();
+            } else {
                 wallpaperNext.setAlpha(0f); wallpaperNext.setImageBitmap(bitmap);
                 wallpaper.animate().alpha(0f).setDuration(motion(650)).start();
                 wallpaperNext.animate().alpha(opacity).setDuration(motion(650)).withEndAction(() -> {
