@@ -60,7 +60,8 @@ public class MainActivity extends Activity {
     private SpotifySessions spotify;
     private MediaController music;
     private FrameLayout root, homeContent;
-    private boolean arrivalPending, arrivalRowsReady, arrivalWallpaperReady, arrivalTimedOut;
+    private boolean arrivalPending, arrivalRowsReady, arrivalWallpaperReady, arrivalTimedOut, arrivalQueued;
+    private int arrivalEpoch;
     private final Runnable arrivalFallback = () -> finishHomeArrival(true);
     private ImageView wallpaper, wallpaperNext, musicArt, backdrop;
     private View dockSurface;
@@ -272,7 +273,8 @@ public class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume(); active = true; art.resume();
         arrivalPending = true; arrivalRowsReady = false; arrivalWallpaperReady = false; arrivalTimedOut = false;
-        homeContent.animate().cancel(); homeContent.setAlpha(0f);
+        arrivalQueued = false; arrivalEpoch++;
+        homeContent.animate().cancel(); homeContent.setAlpha(.01f);
         scrollTarget = 0; scroll.scrollTo(0, 0);
         main.removeCallbacks(arrivalFallback); main.postDelayed(arrivalFallback, 400);
         spotify.start();
@@ -291,7 +293,7 @@ public class MainActivity extends Activity {
         }
     }
     @Override protected void onPause() {
-        arrivalPending = false; main.removeCallbacks(arrivalFallback);
+        arrivalPending = false; arrivalQueued = false; arrivalEpoch++; main.removeCallbacks(arrivalFallback);
         homeContent.animate().cancel(); homeContent.setAlpha(1f);
         wallpaper.animate().cancel(); wallpaper.setAlpha(.9f);
         active = false; main.removeCallbacks(musicTick); main.removeCallbacks(refreshPrograms);
@@ -328,11 +330,28 @@ public class MainActivity extends Activity {
         // Resume/layout can happen behind the outgoing app. Do not spend the fade there.
         if (!active || closed || !arrivalPending || !hasWindowFocus()
                 || (!arrivalTimedOut && (!arrivalRowsReady || !arrivalWallpaperReady))) return;
+        if (arrivalQueued) return;
+        arrivalQueued = true;
+        int epoch = arrivalEpoch;
+        Runnable presented = () -> main.postDelayed(() -> {
+            if (epoch != arrivalEpoch || !active || closed || !arrivalPending) return;
+            arrivalQueued = false;
+            if (hasWindowFocus()) animateHomeArrival();
+        }, prefs.getBoolean("reduced_motion", false) ? 0 : 350);
+        // Alpha zero skips child rendering. Present a near-transparent warm-up frame
+        // so texture uploads cannot consume the entrance animation's whole duration.
+        if (android.os.Build.VERSION.SDK_INT >= 29 && root.isHardwareAccelerated()) {
+            root.getViewTreeObserver().registerFrameCommitCallback(presented);
+            root.invalidate();
+        } else root.postOnAnimation(() -> root.postOnAnimation(presented));
+    }
+
+    private void animateHomeArrival() {
         arrivalPending = false; main.removeCallbacks(arrivalFallback);
         // The layout callback has already restored focus before this frame is drawn.
-        homeContent.animate().alpha(1f).setDuration(motion(500))
+        homeContent.animate().alpha(1f).setDuration(motion(800))
                 .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator()).start();
-        wallpaper.animate().alpha(.9f).setDuration(motion(500))
+        wallpaper.animate().alpha(.9f).setDuration(motion(800))
                 .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator()).start();
     }
 
@@ -390,7 +409,7 @@ public class MainActivity extends Activity {
                 String nextSignature = signature.toString();
                 if (nextSignature.equals(programSignature)) return;
                 programSignature = nextSignature; progress = result;
-                if (active && panel == null) renderRows(focusedKey);
+                if (active && panel == null && browseOpen) renderRows(focusedKey);
             });
         });
     }
