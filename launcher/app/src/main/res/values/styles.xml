@@ -3,7 +3,13 @@
     <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>
-        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowAnimationStyle">@style/HomeWindowAnimation</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+    <style name="HomeWindowAnimation" parent="android:Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/home_enter</item>
+        <item name="android:activityCloseEnterAnimation">@anim/home_enter</item>
     </style>
 
     <!-- Frosted pill, tvOS style. -->

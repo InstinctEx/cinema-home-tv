@@ -59,7 +59,9 @@ public class MainActivity extends Activity {
     private ArtworkLoader art;
     private SpotifySessions spotify;
     private MediaController music;
-    private FrameLayout root;
+    private FrameLayout root, homeContent;
+    private boolean arrivalPending, arrivalRowsReady, arrivalWallpaperReady;
+    private final Runnable arrivalFallback = () -> finishHomeArrival(true);
     private ImageView wallpaper, wallpaperNext, musicArt, backdrop;
     private View dockSurface;
     private GlideFocus utilityGlide;
@@ -78,7 +80,7 @@ public class MainActivity extends Activity {
     private long appsDiscoveredAt;
     private String musicIdentity = "";
     private boolean musicFocused;
-    private Bitmap wallpaperBitmap;
+    private Bitmap wallpaperBitmap, wallpaperPreview;
     private Dialog panel;
     private Typeface font, strongFont;
     private volatile boolean active, closed;
@@ -179,6 +181,8 @@ public class MainActivity extends Activity {
         shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0x4810181C, 0x0010181C, 0x6610181C}));
         root.addView(shade, new FrameLayout.LayoutParams(-1, -1));
+        homeContent = new FrameLayout(this);
+        root.addView(homeContent, new FrameLayout.LayoutParams(-1, -1));
 
         LinearLayout header = new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
         FrameLayout.LayoutParams hp = new FrameLayout.LayoutParams(-1, dp(60)); hp.setMargins(dp(54), dp(28), dp(54), 0);
@@ -213,7 +217,7 @@ public class MainActivity extends Activity {
         scroll.setFillViewport(false); scroll.setClipToPadding(false); scroll.setVerticalScrollBarEnabled(false);
         FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(-1, -1);
         rows = vertical(); rows.setClipChildren(false); rows.setPadding(dp(54), 0, dp(54), dp(24)); scroll.addView(rows);
-        root.addView(scroll, sp); root.addView(header, hp);
+        homeContent.addView(scroll, sp); homeContent.addView(header, hp);
 
         musicStrip = new LinearLayout(this); musicStrip.setGravity(Gravity.CENTER_VERTICAL);
         musicStrip.setPadding(dp(8), dp(6), dp(8), dp(6)); musicStrip.setClipChildren(false);
@@ -251,7 +255,7 @@ public class MainActivity extends Activity {
         };
         musicText.setOnKeyListener(musicKeys); musicPrevious.setOnKeyListener(musicKeys); musicToggle.setOnKeyListener(musicKeys); musicNext.setOnKeyListener(musicKeys);
         FrameLayout.LayoutParams mp = new FrameLayout.LayoutParams(dp(355), dp(46));
-        mp.leftMargin = dp(54); mp.topMargin = dp(88); root.addView(musicStrip, mp);
+        mp.leftMargin = dp(54); mp.topMargin = dp(88); homeContent.addView(musicStrip, mp);
         root.getViewTreeObserver().addOnGlobalFocusChangeListener((previous, next) -> updateMusicFocus());
     }
 
@@ -267,6 +271,10 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume(); active = true; art.resume();
+        arrivalPending = true; arrivalRowsReady = false; arrivalWallpaperReady = false;
+        homeContent.animate().cancel(); homeContent.setAlpha(0f);
+        scrollTarget = 0; scroll.scrollTo(0, 0);
+        main.removeCallbacks(arrivalFallback); main.postDelayed(arrivalFallback, 400);
         spotify.start();
         updateWallpaper();
         if (System.currentTimeMillis() - appsDiscoveredAt > 5000) discoverApps();
@@ -283,6 +291,8 @@ public class MainActivity extends Activity {
         }
     }
     @Override protected void onPause() {
+        arrivalPending = false; main.removeCallbacks(arrivalFallback);
+        homeContent.animate().cancel(); homeContent.setAlpha(1f);
         active = false; main.removeCallbacks(musicTick); main.removeCallbacks(refreshPrograms);
         weatherGeneration++; refreshGeneration++; main.removeCallbacks(refreshWeather);
         art.pause(); wallpaperKey = "";
@@ -294,13 +304,25 @@ public class MainActivity extends Activity {
     }
     @Override protected void onStop() {
         super.onStop();
+        // Keep only a small return-frame preview, not the full wallpaper or poster bitmaps.
+        if (wallpaperBitmap != null) wallpaperPreview = Bitmap.createScaledBitmap(wallpaperBitmap, 320, 180, true);
         // Home stays in the back stack during a film. Drop its pixel references,
         // not just the LRU entries; ImageViews otherwise keep those pixels alive.
         musicGeneration++; rowsGeneration++;
         releaseImages(root);
+        wallpaper.setImageBitmap(wallpaperPreview);
+        wallpaper.setAlpha(.9f);
         if (panelFrame != null) releaseImages(panelFrame);
         wallpaperBitmap = null; wallpaperKey = ""; musicIdentity = "";
         apps.clear(); appsDiscoveredAt = 0;
+    }
+
+    private void finishHomeArrival(boolean fallback) {
+        if (!active || closed || !arrivalPending || (!fallback && (!arrivalRowsReady || !arrivalWallpaperReady))) return;
+        arrivalPending = false; main.removeCallbacks(arrivalFallback);
+        // The layout callback has already restored focus before this frame is drawn.
+        homeContent.animate().alpha(1f).setDuration(motion(200))
+                .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
     }
 
     private void releaseImages(View view) {
@@ -421,6 +443,8 @@ public class MainActivity extends Activity {
             @Override public void onGlobalLayout() {
                 rows.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             if (closed || !active || generation != rowsGeneration) return;
+            arrivalRowsReady = true;
+            finishHomeArrival(false);
             View restore = restoreKey == null ? null : rows.findViewWithTag(restoreKey);
             if (panel != null) return;
             if (externalFocus != null && externalFocus.isAttachedToWindow()) { externalFocus.requestFocus(); return; }
@@ -613,7 +637,7 @@ public class MainActivity extends Activity {
         if ("custom".equals(key)) key = prefs.getString("wallpaper_uri", "");
         int dim = 10;
         wallpaper.setAlpha(1f - Math.max(0, Math.min(80, dim)) / 100f);
-        if (key.equals(wallpaperKey)) return;
+        if (key.equals(wallpaperKey)) { arrivalWallpaperReady = wallpaperBitmap != null; finishHomeArrival(false); return; }
         wallpaperKey = key;
         String location = key.startsWith("content:") ? key : "asset:wallpapers/" + key + ".jpg";
         String requested = key;
@@ -631,7 +655,9 @@ public class MainActivity extends Activity {
                 }).start();
             }
             wallpaperBitmap = bitmap;
+            wallpaperPreview = null;
             if (dockSurface != null) dockSurface.setBackground(new FrostedPanelDrawable(dockSurface, root, bitmap, "quiet"));
+            arrivalWallpaperReady = true; finishHomeArrival(false);
         });
     }
     private void chooseWallpaper() {
@@ -786,6 +812,10 @@ public class MainActivity extends Activity {
     @Override public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW && art != null) art.trimMemory();
+        if (!active && (level == android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
+                || level >= android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND)) {
+            wallpaperPreview = null; wallpaper.setImageDrawable(null);
+        }
     }
 
 }

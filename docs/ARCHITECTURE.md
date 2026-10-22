@@ -26,3 +26,5 @@ Validation: 30 launcher JVM tests, Android debug build and lint. The separate Py
 cover cleanup/recovery and installation, not the visual layout or physical remote feel.
 
 Continue Watching requests a bounded 1280×720 backdrop after a 280 ms focus dwell. Generation checks reject late results; leaving the row fades back to the wallpaper. Quiet dock glass samples its original Home position, compensating for ancestor scrolling so a return from the lower page cannot leave a clamped grey texture.
+
+Home returns with a short opacity fade for the header and dock after wallpaper and layout readiness, with a bounded fallback if an image cannot load. A 320×180 wallpaper preview stays behind the controls while the full image reloads. At RGB565 this is about 113 KiB; a different bitmap format can use more. The preview is discarded under background memory pressure. Full artwork and app-icon references are still released while Home is stopped. The activity window also uses a short enter fade and suppresses the blank starting preview. No full-screen scale or live blur is added.
