@@ -1,0 +1,25 @@
+# Local device configuration and private data
+/launcher/app/src/debug/
+backup/
+**/adbkey/
+**/adbkey*
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.pem
+*.p12
+*.apk
+*.aab
+*.hprof
+*.log
+local.properties
+**/build/
+**/.gradle/
+**/__pycache__/
+*.pyc
+**/venv/
+.venv/
+.DS_Store
+.idea/

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsOverlay" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#C0080A0E" android:clickable="true" android:focusable="true" android:visibility="gone"
+    android:paddingStart="40dp" android:paddingEnd="40dp" android:paddingTop="22dp" android:paddingBottom="18dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="14dp">
+            <TextView android:id="@+id/btnSettingsClose" style="@style/TopButton" android:layout_width="42dp" android:text="←" android:contentDescription="Close settings" android:nextFocusRight="@+id/btnTopStyleText" android:nextFocusDown="@id/btnTopStyleText" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Make yourself at home" android:textSize="26sp" android:textColor="#FFFFFF" android:fontFamily="@font/outfit" />
+        </LinearLayout>
+        <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true" android:clipToPadding="false">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false">
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="Appearance"/><TextView style="@style/SettingsDescription" android:text="Choose labels or icons for the top bar."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnTopStyleText" style="@style/SettingsOption" android:text="Text + icons"/>
+<TextView android:id="@+id/btnTopStyleIcon" style="@style/SettingsOption" android:text="Icons only"/>
+</LinearLayout></LinearLayout>
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="Dock position"/><TextView style="@style/SettingsDescription" android:text="How much of the dock stays visible when you use the top bar."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnPeekUltra" style="@style/SettingsOption" android:text="Minimal"/>
+<TextView android:id="@+id/btnPeekBalanced" style="@style/SettingsOption" android:text="Half"/>
+<TextView android:id="@+id/btnPeekNone" style="@style/SettingsOption" android:text="Always visible"/>
+</LinearLayout><TextView android:id="@+id/btnDockApps" style="@style/SettingsOption" android:layout_width="match_parent" android:layout_weight="0" android:text="Choose dock apps"/></LinearLayout>
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false">
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="Wallpaper"/><TextView style="@style/SettingsDescription" android:text="Follow the time of day, or choose a fixed background."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnWallAuto" style="@style/SettingsOption" android:text="Automatic"/>
+<TextView android:id="@+id/btnWallDay" style="@style/SettingsOption" android:text="Day"/>
+<TextView android:id="@+id/btnWallNight" style="@style/SettingsOption" android:text="Night"/>
+</LinearLayout></LinearLayout>
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="Media &amp; posters"/><TextView style="@style/SettingsDescription" android:text="Public movie and series catalogs. Open a title in your chosen app."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnMediaApp" style="@style/SettingsOption" android:text="Open titles in NUVIO"/>
+<TextView android:id="@+id/btnMediaShelf" style="@style/SettingsOption" android:text="Poster rows: On"/>
+</LinearLayout></LinearLayout>
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false">
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="Frosted glass"/><TextView style="@style/SettingsDescription" android:text="A softened wallpaper backdrop with adjustable contrast."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnGlassStyle" style="@style/SettingsOption" android:text="Glass: frosted"/>
+</LinearLayout></LinearLayout>
+<LinearLayout style="@style/SettingsCard"><TextView style="@style/SettingsTitle" android:text="System"/><TextView style="@style/SettingsDescription" android:text="TV, network and installed app settings."/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:id="@+id/btnSysSettings" style="@style/SettingsOption" android:text="TV settings"/>
+<TextView android:id="@+id/btnSysWifi" style="@style/SettingsOption" android:text="Wi-Fi"/>
+<TextView android:id="@+id/btnSysApps" style="@style/SettingsOption" android:text="Apps"/>
+</LinearLayout></LinearLayout>
+</LinearLayout>
+</LinearLayout></ScrollView></LinearLayout></FrameLayout>

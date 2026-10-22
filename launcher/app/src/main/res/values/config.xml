@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher configuration. Edit this file, then run launcher/build-and-install.sh.
+  Package names: on the TV run `pm list packages` (tools/tv.py 'pm list packages').
+-->
+<resources>
+
+    <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
+    <string-array name="dock_apps">
+        <item>com.nuvio.tv</item>
+        <item>com.nuvio.app</item>
+        <item>org.smarttube.beta</item>
+        <item>org.smarttube.stable</item>
+        <item>app.smarttube.fdroid</item>
+        <item>com.liskovsoft.smarttubetv.beta</item>
+        <item>com.liskovsoft.smarttubetv</item>
+        <item>com.stremio.one</item>
+        <item>com.netflix.ninja</item>
+        <item>com.spotify.tv.android</item>
+        <item>com.gathin.tvhome.inputs</item>
+    </string-array>
+
+    <string-array name="media_favourites" translatable="false" />
+
+    <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
+    <string-array name="hidden_apps">
+        <item>com.mediatek.wwtv.tvcenter</item>
+        <item>com.mitv.gallery</item>
+    </string-array>
+
+    <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
+    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+
+    <!-- Tiles per row in the grid; the dock always has this many slots. -->
+    <integer name="columns">5</integer>
+    <!-- Optional weather: blank by default. Fill all three privately in a local build, then rebuild.
+         Do not commit a personal location. Values are not included in settings exports. -->
+    <string name="weather_location_name" translatable="false"></string>
+    <string name="weather_latitude" translatable="false"></string>
+    <string name="weather_longitude" translatable="false"></string>
+</resources>

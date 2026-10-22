@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <!-- Frosted pill, tvOS style. -->
+    <style name="TopButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/pill_bg</item>
+        <item name="android:textColor">@drawable/pill_text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:drawablePadding">9dp</item>
+        <item name="android:drawableTint">@drawable/pill_text</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <!-- Calendar day of week header style -->
+    <style name="CalDayHeader">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#8CFFFFFF</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:letterSpacing">0.12</item>
+    </style>
+    <style name="SettingsCard">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">7dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:background">@drawable/setting_card_bg</item>
+    </style>
+    <style name="SettingsTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:fontFamily">@font/outfit</item>
+    </style>
+    <style name="SettingsDescription" parent="SettingsTitle">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#BFFFFFFF</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+    <style name="SettingsOption">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">3dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@drawable/setting_option_text</item>
+        <item name="android:background">@drawable/setting_option_bg</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+</resources>
