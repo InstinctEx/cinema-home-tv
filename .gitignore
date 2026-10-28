@@ -23,3 +23,14 @@ local.properties
 .venv/
 .DS_Store
 .idea/
+
+# Public Apple root certificate; private signing material remains ignored
+!launcher/app/src/main/res/raw/apple_root_ca.pem
+*.py[cod]
+.pytest_cache/
+# Device-specific examples, captures and local investigation notes
+/examples/
+/docs/screenshots/
+/docs/DEVICE.md
+/docs/launcher-optimization-2026-10-22.md
+/docs/nuvio-playback-analysis-2026-10-22.md

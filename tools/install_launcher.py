@@ -42,10 +42,10 @@ def main():
     result = run("install", "-r", str(apk))
     if "Success" not in result:
         raise RuntimeError(f"Install did not report success: {result}")
-    started = run("shell", "am", "start", "-W", "-n", COMPONENT)
+    started = run("shell", "am", "start", "-W", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.HOME", "-n", COMPONENT)
     if re.search(r"(?im)^Status:\s*timeout", started):
         # Vendor input screens can briefly take over when an existing Home APK is replaced.
-        started = run("shell", "am", "start", "-W", "-n", COMPONENT)
+        started = run("shell", "am", "start", "-W", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.HOME", "-n", COMPONENT)
     if not re.search(r"(?im)^Status:\s*ok\s*$", started):
         raise RuntimeError(f"Home launch was not confirmed: {started}")
     activity = re.search(r"(?im)^Activity:\s*(\S+)", started)
@@ -57,7 +57,8 @@ def main():
         if os.environ.get("DISABLE_STOCK_LAUNCHER") == "1" and original.split("/")[0] != "com.gathin.tvhome":
             run("shell", "pm", "disable-user", "--user", "0", original.split("/")[0])
             disabled_stock = True
-        run("shell", "cmd", "package", "set-home-activity", "--user", "0", COMPONENT)
+        if original not in {COMPONENT, "com.gathin.tvhome/com.gathin.tvhome.MainActivity"}:
+            run("shell", "cmd", "package", "set-home-activity", "--user", "0", COMPONENT)
         selected = run("shell", "cmd", "package", "resolve-activity", "--brief", "-a",
                        "android.intent.action.MAIN", "-c", "android.intent.category.HOME")
         if not selected.splitlines()[-1].startswith("com.gathin.tvhome/"):

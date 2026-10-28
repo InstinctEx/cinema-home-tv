@@ -17,6 +17,8 @@ public final class HomeDiagnostics extends BroadcastReceiver {
             JSONObject report = new JSONObject();
             java.util.List<ContinueWatching.Item> items = ContinueWatching.read(context);
             report.put("continueWatching", items.size());
+            report.put("frames",FrameStats.summary());
+            report.put("personalMediaBytes",new MediaLibrary(context).used());
             JSONArray sources = new JSONArray();
             for (ContinueWatching.Item item : items) {
                 Uri image = Uri.parse(item.artwork);

@@ -1,38 +1,95 @@
-# Setup and recovery
+# Setup and restore
 
-## Prepare
+Cinema Home is a source-built launcher replacement for Android TV 8+ (API 26). The tested
+configuration is described in [release validation notes](docs/RELEASE-4.md). Build instructions are in the
+[README](README.md#build-without-touching-a-tv).
 
-Keep a private record of your original Home component, enabled packages and any settings you change. Keep the stock launcher enabled until you have verified the replacement. Review the dock, hidden apps and Live TV package in `launcher/app/src/main/res/values/config.xml`; tuner package names vary by TV.
+## Before installation
 
-Install Android platform-tools and authorize your computer using the TV’s debugging settings. Set `TV_HOST` to your own TV address. Examples use documentation-only addresses.
+1. Record the model, firmware, installed packages, disabled packages, current Home component and
+   any settings you intend to change. Keep those files private and outside Git.
+2. Install Android platform-tools on your computer. Enable debugging on the TV only for setup,
+   authorize your computer and use a trusted local network.
+3. Check the current Home and keep its component/package in your recovery notes. Keep the stock
+   launcher enabled until Cinema Home starts, accepts D-pad input and handles Home correctly.
+4. Edit `launcher/app/src/main/res/values/config.xml` for your dock and Live TV package. The shipped
+   Live TV default is MediaTek-specific; do not assume it matches a different TV.
+5. Review [privacy and permissions](docs/PRIVACY.md), including the online features and optional weather configuration.
 
-## Install the launcher
+## Install
 
 ```sh
-export TV_HOST=192.0.2.10
+export TV_HOST=192.0.2.10  # example only; replace with your TV's address
 ./launcher/build-and-install.sh
 ```
 
-The helper builds the launcher, records the previous Home privately in `backup/install-*/original-home.json`, installs the APK, starts it and verifies Home selection. It attempts to restore the previous Home if handover fails. It does not install another test app or grant optional services. Preserve the original recovery record across updates.
+The script builds locally and calls `tools/install_launcher.py`. The installer connects with
+ADB, records the previous Home in a private `backup/install-*/original-home.json`, installs the
+APK, confirms the activity starts, selects it as Home and verifies resolution. It attempts to
+restore the prior Home if handover fails. It does not apply a cleanup list or grant optional access.
+Vendor behavior can still differ; check navigation and a return from another app before proceeding.
 
-The package is `com.gathin.tvhome`, shared with upstream variants. An update must use the same signing certificate as the installed app. A signature conflict requires planning a migration; do not routinely uninstall an existing launcher and lose its data.
+`DISABLE_STOCK_LAUNCHER=1` is an explicit fallback for a TV that refuses handover while stock Home
+is enabled. It is not the default. Use it only after checking the recorded Home, a working recovery
+path and the device-specific requirements. Never disable input, pairing, keyboard, network or core Android services.
+
+The package ID is shared with upstream forks. If Android reports a signature conflict, stop and
+plan a migration; do not delete an existing launcher's data as a routine install step.
 
 ## Optional access
 
-- **Continue Watching:** where supported, grant `android.permission.READ_TV_LISTINGS` to `com.gathin.tvhome` using ADB. Apps must publish their own rows; this does not expose private player databases.
-- **Spotify:** select Settings → Spotify control access and enable Cinema Home in the system notification access screen. No Spotify API key is needed.
-- **AirPlay:** the shortcut opens `io.github.jqssun.airplay` if independently installed. It does not bundle a receiver.
-- **Remote shortcuts:** the optional accessibility service filters configured remote keys and cannot retrieve window contents. Bindings are device-local; public defaults do not intercept a particular remote’s YouTube key.
+- **Continue Watching:** grant TV listings access if Android permits it:
+  `adb -s "$TV_HOST:5555" shell pm grant com.gathin.tvhome android.permission.READ_TV_LISTINGS`.
+  Some vendor permission models differ. The feature depends on apps publishing entries; this grant
+  cannot reveal private viewing history that an app does not publish.
+- **Spotify:** open Control Center → Spotify Now Playing → Music control access, then enable
+  Cinema Home in Android's notification access settings. No Spotify Web API credentials are used.
+- **Remote shortcuts and sleep timer:** enable Cinema Home's accessibility service only if you
+  want these functions. It does not retrieve window contents. Some TVs do not expose the required
+  standby action; the timer is off by default.
+- **AirPlay:** install and configure a compatible receiver independently if desired. The launcher
+  only opens `io.github.jqssun.airplay`; it does not install, bundle or auto-start a receiver.
 
-Settings contains wallpaper, dock selection, Spotify access and TV settings. Earlier experimental controls retained in legacy source are not part of the normal Home interface.
+## Customize
 
-## Private weather configuration
+Control Center edits dock apps, the poster app, wallpapers, dimming, glass, sound and optional
+online rows. A document picker is needed to select a custom wallpaper or export/import settings.
+Backup & restore Home saves a local restore point and validates portable JSON imports. App accounts,
+viewing history, timers and remote key assignments are excluded; reselect custom wallpaper files after import.
 
-Public location resources are empty. To configure weather for a local debug build, create an ignored `launcher/app/src/debug/res/values/weather-local.xml` resource file defining `weather_location_name`, `weather_latitude` and `weather_longitude`. Use your own valid values. Home shows weather when all three are configured; no location picker or additional Home toggle is needed. Keep this file private and do not distribute the personalized APK. Release builds do not include the debug overlay.
+NUVIO can ask for a profile; choose your own. NUVIO and Stremio handle sources, playback and accounts.
+The launcher is not a streaming service and does not install addons or configure content providers.
 
-## Recovery
+Weather is off and unconfigured by default. To use it, privately fill `weather_location_name`,
+`weather_latitude` and `weather_longitude` in `config.xml`, rebuild and enable Weather in Control Center.
+All three values must be valid before any forecast request is made. Keep personal coordinates out
+of commits. The provider resolves the timezone from those configured coordinates; no GPS is used.
+There is no on-TV location picker.
 
-With ADB authorized, use the original package and component from your private record:
+## Optional cleanup
+
+You do not need to debloat the TV to use this launcher. Read each package and comment in the
+matching example first. The F&U list records one household's choices and has only a short test
+history; it is not a general safe list for all F&U TVs. Voice, casting, streaming apps and firmware
+updaters are personal choices, not required removals.
+
+```sh
+python3 -m venv tools/venv
+tools/venv/bin/pip install -r tools/requirements.txt
+export TV_HOST=192.0.2.10
+./tools/disable.sh YOUR_REVIEWED_LIST.txt
+# Undo the recorded cleanup:
+./tools/restore.sh YOUR_REVIEWED_LIST.txt
+```
+
+The helpers use reversible `pm disable-user`, keep recovery records and guard Home, TV inputs and
+setup-wizard Wi-Fi ownership. Do not use override flags to bypass an unexplained refusal. Never
+run a list for a different board just because its brand matches.
+
+## Restore stock Home
+
+Use the recorded original component and package from your private recovery record, not a guessed
+package from another TV. With ADB still authorized:
 
 ```sh
 adb -s "$TV_HOST:5555" shell pm enable --user 0 ORIGINAL_STOCK_PACKAGE
@@ -40,6 +97,9 @@ adb -s "$TV_HOST:5555" shell cmd package set-home-activity --user 0 ORIGINAL_HOM
 adb -s "$TV_HOST:5555" shell input keyevent KEYCODE_HOME
 ```
 
-The optional computer cleanup helpers are separate from launcher installation. No household removal list is shipped. Use only a package list you have reviewed for your own firmware, and retain its recovery records.
+Replace the uppercase placeholders with your recorded values. Cleanup restore and Home selection
+are separate: verify both. This procedure leaves Cinema Home installed. Preserve your original
+recovery record when updating the APK; an update-time record may already name Cinema Home.
 
-Turn debugging off after setup when you no longer need it. Installation and injected remote commands can interrupt viewing; perform them while the TV is available.
+After setup, turn debugging off, revoke authorizations and verify the network ADB port is closed.
+Do not interrupt another person's viewing to run installation, restore or injected-key checks.

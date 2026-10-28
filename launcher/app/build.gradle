@@ -10,8 +10,8 @@ android {
         applicationId 'com.gathin.tvhome'
         minSdk 26
         targetSdk 29
-        versionCode 14
-        versionName '3.11-simple'
+        versionCode 23
+        versionName '4.0.8-cinema'
     }
 
     buildTypes {
@@ -19,6 +19,8 @@ android {
             minifyEnabled false
         }
     }
+
+    testOptions { unitTests.includeAndroidResources = true }
 
     lint {
         // The launcher is sideloaded over ADB, never published to Google Play, so Play's minimum targetSdk
@@ -33,7 +35,9 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.zxing:core:3.5.3'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.17'
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
 }

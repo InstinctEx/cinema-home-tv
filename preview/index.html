@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cinema Home · Local preview</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+  <script src="/phone/scene-policy.js" defer></script>
+  <script src="/features.js" defer></script>
+</head>
+<body>
+  <div class="preview-bar">
+    <span><strong>Cinema Home</strong> <span class="muted">Interactive preview</span></span>
+    <button id="replay" class="expand">Replay entrance</button><button id="expand" class="expand">Expand</button><label><input id="samples" type="checkbox"> Sample media</label>
+  </div>
+  <main id="viewport" aria-label="TV preview">
+    <div id="tv" class="arriving">
+      <div class="shade"></div>
+      <header>
+        <div><time id="clock">00:00</time><div class="weather" role="status" hidden></div></div>
+        <nav aria-label="Utilities" data-row="0">
+          <button data-message="AirPlay opens the installed receiver on your TV.">AirPlay</button>
+          <button id="settings">Settings</button>
+        </nav>
+      </header>
+      <div class="sample music" data-row="1" hidden>
+        <div class="album" aria-hidden="true">♫</div>
+        <div class="track"><span>Evening light</span><small>Sample Spotify session</small><div class="progress"><i></i></div></div>
+        <button aria-label="Previous sample track" data-message="Sample track: Evening light">‹</button>
+        <button id="play" aria-label="Pause sample playback" aria-pressed="true">Ⅱ</button>
+        <button aria-label="Next sample track" data-message="Sample track: Evening light">›</button>
+      </div>
+      <div id="dock" data-row="2" aria-label="Favorite apps"></div>
+      <div id="browse">
+        <section class="sample" hidden>
+          <h2>Continue Watching <small>Sample entries</small></h2>
+          <div class="posters" data-row="3">
+            <button class="poster coast" data-message="Sample resume entry. On TV this opens the publishing app at its saved position."><span>Coastal journey<small>Sample · 24 minutes left</small></span><div class="progress"><i></i></div></button>
+            <button class="poster dunes" data-message="Sample resume entry. On TV this opens the publishing app at its saved position."><span>Across the dunes<small>Sample · 42 minutes left</small></span><div class="progress"><i></i></div></button>
+            <button class="poster lake" data-message="Sample resume entry. On TV this opens the publishing app at its saved position."><span>After the sun<small>Sample · 18 minutes left</small></span><div class="progress"><i></i></div></button>
+          </div>
+        </section>
+        <section><h2>Other apps <small>Example installed apps</small></h2><div id="other-apps" data-row="4"></div></section>
+      </div>
+      <div id="notice" role="status"></div>
+      <dialog id="panel" aria-labelledby="panel-title"><h1 id="panel-title">Settings</h1><div id="panel-actions"></div><button id="close-panel">Close</button></dialog>
+    </div>
+  </main>
+  <footer><span>← → Select &nbsp; ↑ ↓ Browse &nbsp; Enter Open &nbsp; Esc Home · Hold Enter / right-click Edit</span><span>Browser simulation · no TV connection</span></footer>
+</body>
+</html>

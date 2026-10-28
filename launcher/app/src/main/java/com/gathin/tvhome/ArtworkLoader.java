@@ -158,6 +158,8 @@ final class ArtworkLoader {
     void resume() { if (!closed) paused = false; }
 
     private InputStream stream(String location) throws Exception {
+        if (location.equals("private-daily:")) return new java.io.FileInputStream(DailyWallpaper.file(context));
+        if (location.startsWith("private:")) return new java.io.FileInputStream(new MediaLibrary(context).file(location.substring(8)));
         if (location.startsWith("asset:")) return context.getAssets().open(location.substring(6));
         Uri uri = Uri.parse(location);
         if ("content".equals(uri.getScheme()) || "android.resource".equals(uri.getScheme())) {

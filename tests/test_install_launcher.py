@@ -19,12 +19,12 @@ NEW = installer.COMPONENT
 
 
 class InstallTests(unittest.TestCase):
-    def simulate(self, *, start_fails=False, handover_fails=False, disable_stock=True, launch_timeouts=0):
+    def simulate(self, *, start_fails=False, handover_fails=False, disable_stock=True, launch_timeouts=0, existing_home=STOCK):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         root = Path(temporary.name)
         commands = []
-        home = STOCK
+        home = existing_home
         starts = 0
 
         def adb(args, **kwargs):
@@ -56,6 +56,20 @@ class InstallTests(unittest.TestCase):
                 failure = error
         record = json.loads(next(root.glob("backup/*/original-home.json")).read_text())
         return commands, failure, record, home
+
+    def test_install_launches_home_instead_of_creating_a_standard_app_task(self):
+        commands, error, _, _ = self.simulate(disable_stock=False)
+        self.assertIsNone(error)
+        starts=[c for c in commands if c[:3] == ("shell","am","start")]
+        for command in starts:
+            self.assertIn("android.intent.action.MAIN",command)
+            self.assertIn("android.intent.category.HOME",command)
+
+    def test_updating_existing_home_does_not_reassign_its_role(self):
+        commands, error, _, home = self.simulate(disable_stock=False,existing_home=NEW)
+        self.assertIsNone(error)
+        self.assertEqual(home,NEW)
+        self.assertFalse(any(c[:4] == ("shell","cmd","package","set-home-activity") for c in commands))
 
     def test_failed_launch_never_disables_stock(self):
         commands, error, record, home = self.simulate(start_fails=True)

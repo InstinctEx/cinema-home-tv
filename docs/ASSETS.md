@@ -28,7 +28,6 @@ Movie/series posters and backgrounds are requested at runtime from the providers
 [PRIVACY.md](PRIVACY.md). Spotify art is supplied by its media session or published artwork URI.
 This repository does not grant a license to redistribute those providers' catalogs or media.
 
-No household screenshots or viewing-history captures are included.
 
 ## Quiet Home update
 
@@ -41,3 +40,18 @@ from that revision, credited to **Ganapathy Kumar** ([original photo](https://un
 under the [Unsplash License](https://unsplash.com/license). CleanFrame's source and credit register
 is [here](https://github.com/nthnclrk/CleanFrame/blob/fa537d1892b71d2de2bf94c24cbff3812e9f70d5/docs/asset-sources.md).
 The photo is packaged locally and displayed through the existing bounded artwork decoder.
+
+## Version 4
+
+The aerial URL/caption catalogue comes from [pengchujin/aerial-tv](https://github.com/pengchujin/aerial-tv)
+at `83567858cad09a2e3b57d16296c88e249ac9cef3`, derived there from Apple's public aerial catalogue.
+The upstream MIT notice is retained in `launcher/app/src/main/assets/AERIAL-LICENSE.txt`.
+No Apple video files are bundled; footage remains Apple's property and streams from its server.
+Bing images remain subject to their source rights. Personal uploads are supplied by the owner.
+QR encoding uses ZXing core (Apache 2.0); the full notice is bundled as
+`launcher/app/src/main/assets/ZXING-LICENSE.txt`.
+Device glyphs are drawn locally in our cream style rather than importing Aerial's colored tiles.
+
+Scene thumbnail URLs are Apple's `previewImage` entries from the tvOS 26 `resources-atv-23J-2` catalogue, matched by ID to all 114 bundled scene records. Images are fetched on demand; they are not bundled. Browser cards show a connection fallback if the host cannot be reached.
+
+`res/raw/apple_root_ca.pem` is the public Apple Inc. Root certificate downloaded from https://www.apple.com/appleca/AppleIncRootCertificate.cer (listed at https://www.apple.com/certificateauthority/). SHA-256: `b0b1730ecbc7ff4505142c49f1295e6eda6bcaed7e2c68c5be91b5a11001f024`. The network policy adds it only for the exact host `sylvan.apple.com`; system trust and hostname verification remain active, and that host requires HTTPS.
